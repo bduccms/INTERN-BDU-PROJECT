@@ -1,0 +1,129 @@
+{
+  "students": [
+    {
+      "username": "stu001",
+      "password": "pass123",
+      "studentName": "John ",
+      "firstName": "John",
+      "lastName": "Doe",
+      "studentId": "BDU/CS/001/16",
+      "department": "Computer Science",
+      "sex": "Male",
+      "fatherName": " Doe",
+      "grandFatherName": "Robert "
+    },
+    {
+      "username": "stu002",
+      "password": "pass123",
+      "studentName": "Alice Wilson",
+      "firstName": "Alice",
+      "lastName": "Wilson",
+      "studentId": "BDU/CS/002/16",
+      "department": "Computer Science",
+      "sex": "Female",
+      "fatherName": " Wilson",
+      "grandFatherName": "Thomas "
+    },
+    {
+      "username": "stu003",
+      "password": "pass123",
+      "studentName": "David Lee",
+      "firstName": "David",
+      "lastName": "Lee",
+      "studentId": "BDU/CS/003/16",
+      "department": "Computer Science",
+      "sex": "Male",
+      
+      "fatherName": " Lee",
+      "grandFatherName": "Richard "
+    },
+    {
+      "username": "stu004",
+      "password": "pass123",
+      "studentName": "Selam Tesfaye",
+      "firstName": "Selam",
+      "lastName": "Tesfaye",
+      "studentId": "BDU/IT/001/16",
+      "department": "Information Technology",
+      "sex": "Female",
+      "academicYear": "2016",
+      "semester": "2nd",
+      "yearOfStudy": "IV",
+      "fatherName": " Tesfaye",
+      "grandFatherName": "Kebede "
+    },
+    {
+      "username": "stu005",
+      "password": "pass123",
+      "studentName": "Bereket Desta",
+      "firstName": "Bereket",
+      "lastName": "Desta",
+      "studentId": "BDU/IT/002/16",
+      "department": "Information Technology",
+      "sex": "Male",
+      
+      "fatherName": " Desta",
+      "grandFatherName": "Mengistu "
+    },
+    {
+      "username": "stu006",
+      "password": "pass123",
+      "studentName": "Eden Taye",
+      "firstName": "Eden",
+      "lastName": "Taye",
+      "studentId": "BDU/EE/001/16",
+      "department": "Electrical Engineering",
+      "sex": "Female",
+      "fatherName": " Taye",
+      "grandFatherName": "Daniel "
+    },
+    {
+      "username": "stu007",
+      "password": "pass123",
+      "studentName": "Abebe Kebede",
+      "firstName": "Abebe",
+      "lastName": "Kebede",
+      "studentId": "BDU/EE/002/16",
+      "department": "Electrical Engineering",
+      "sex": "Male",
+      "fatherName": " Kebede",
+      "grandFatherName": "Mulugeta "
+    },
+    {
+      "username": "stu008",
+      "password": "pass123",
+      "studentName": "Almaz Getachew",
+      "firstName": "Almaz",
+      "lastName": "Getachew",
+      "studentId": "BDU/ME/001/16",
+      "department": "Mechanical Engineering",
+      "sex": "Female",
+      "fatherName": " Getachew",
+      "grandFatherName": "Dawit "
+    },
+    {
+      "username": "stu009",
+      "password": "pass123",
+      "studentName": "Tesfaye Kebede",
+      "firstName": "Tesfaye",
+      "lastName": "Kebede",
+      "studentId": "BDU/ME/002/16",
+      "department": "Mechanical Engineering",
+      "sex": "Male",
+      "fatherName": " Kebede",
+      "grandFatherName": "Assefa "
+    },
+    {
+      "username": "stu010",
+      "password": "pass123",
+      "studentName": "Kidist Solomon",
+      "firstName": "Kidist",
+      "lastName": "Solomon",
+      "studentId": "BDU/CE/001/16",
+      "department": "Civil Engineering",
+      "sex": "Female",
+      "fatherName": " Solomon",
+      "grandFatherName": "Yohannes "
+    }
+  ]
+}
