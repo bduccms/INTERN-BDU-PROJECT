@@ -21,6 +21,7 @@ import {
 import * as XLSX from "xlsx";
 import logo from "../assets/logo.png";
 import OfficialForm from "../components/OfficialForm";
+import AdvisorForm from "../components/AdvisorForm";
 
 // ✅ Import mock data
 import mockOfficials from "../data/mockOfficialsData.json";
@@ -31,11 +32,14 @@ import axios from "axios";
 function MainAdmin() {
   const [activeTab, setActiveTab] = useState("officials"); // "officials" | "risks"
   const [officials, setOfficials] = useState([]);
+  const [advisors, setAdvisors] = useState([]);// State for advisors
   const [risks, setRisks] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const [showAdvisorModal, setShowAdvisorModal] = useState(false);
   const [formMode, setFormMode] = useState("add"); // "add" or "edit"
   const [editingIndex, setEditingIndex] = useState(null);
   const { token, setToken, currentUser } = useContext(AppContext);
+
   const [officialForm, setOfficialForm] = useState({
     official_id: "",
     first_name: "",
@@ -49,6 +53,24 @@ function MainAdmin() {
 
     password: "",
   });
+
+
+const [advisorForm, setAdvisorForm] = useState({
+  advisor_id: "",
+  first_name: "",
+  last_name: "",
+  profession: "",
+  education: "",
+  assigned_department: "",
+  email: "",
+  phone: "",
+  password: "",
+});
+
+
+
+
+
   const [formError, setFormError] = useState(null);
 
   const [summary, setSummary] = useState({
@@ -58,9 +80,11 @@ function MainAdmin() {
   });
 
   const [officialSearch, setOfficialSearch] = useState(""); // 🔥 Search input for officials
+  const [advisorSearch, setAdvisorSearch] = useState(""); // 🔥 Search input for advisors
   const [riskSearch, setRiskSearch] = useState(""); // 🔥 Search input for risks
   const [riskStatusFilter, setRiskStatusFilter] = useState("all"); // 🔥 Status filter for risks
   const [totalOfficials, setTotalOfficial] = useState([]);
+  const [totalAdvisors, setTotalAdvisors] = useState([]);  // total advisors for advisors tab
   const [totalRisk, setTotalRisk] = useState([]);
   const [totalClearanceRequest, setTotalClearanceRequest] = useState([]);
   const [filteredRisks, setFilteredRisks] = useState([]);
@@ -73,6 +97,28 @@ function MainAdmin() {
   const [filteredClearanceRequests, setFilteredClearanceRequests] = useState(
     []
   );
+
+
+
+useEffect(() => {
+  const fetchAdvisors = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/api/admin/totalAdvisors", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (response.data.success) {
+        setTotalAdvisors(response.data.rows); // this will populate filteredAdvisors too
+      }
+    } catch (error) {
+      console.error("Error fetching advisors:", error);
+    }
+  };
+
+  if (token) fetchAdvisors();
+}, [token]);
+
+
+
 
   const fetchData = async () => {
     try {
@@ -223,7 +269,7 @@ function MainAdmin() {
 
         if (response.data.success) {
           fetchData(); // refresh list
-          closeModal();
+          close_Modal();
         } else {
           setFormError(response.data.message);
         }
@@ -239,7 +285,7 @@ function MainAdmin() {
 
         if (response.data.success) {
           fetchData();
-          closeModal();
+          close_Modal();
         } else {
           setFormError(response.data.message);
         }
@@ -272,6 +318,159 @@ function MainAdmin() {
     // setTotalOfficial(updatedList);
   };
 
+
+
+
+
+
+
+const open_Add_Modal = () => {
+    setFormMode("add");
+    setAdvisorForm({
+      advisor_id: "",
+      first_name: "",
+      last_name: "",
+      profession: "",
+      education: "",
+      assigned_department: "",
+
+      email: "",
+      phone: "",
+
+      password: "",
+    });
+    setShowAdvisorModal(true);
+  };
+
+  const open_Edit_Modal = (id) => {
+  setFormMode("edit");
+  const advisor = totalAdvisors.find((a) => a.advisor_id === id);
+  if (!advisor) return;
+  setAdvisorForm(advisor);
+  setShowAdvisorModal(true);
+};
+
+
+
+  const close_Modal = () => {
+    setShowAdvisorModal(false);
+    setFormError(null);
+  };
+
+  const handleAdvisorFormChange = (e) => {
+    const { name, value } = e.target;
+    setAdvisorForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleAdvisorFormSubmit = async (e) => {
+    e.preventDefault();
+
+    // Validation (all required fields except password in edit mode)
+    if (
+      !advisorForm.first_name ||
+      !advisorForm.last_name ||
+      !advisorForm.profession ||
+      !advisorForm.education ||
+      !advisorForm.assigned_department ||
+      !advisorForm.email ||
+      !advisorForm.phone ||
+      (formMode === "add" && !advisorForm.password) // password required only when adding
+    ) {
+      setFormError("Please fill in all required fields.");
+      return;
+    }
+
+    try {
+      if (formMode === "edit") {
+        // Exclude password when editing
+        const { advisor_id, password, ...editData } = advisorForm;
+
+        const response = await axios.put(
+          `http://localhost:5000/api/admin/editAdvisor/${advisorForm.advisor_id}`,
+          editData,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        if (response.data.success) {
+          // Refresh advisor data
+          const advisorResponse = await axios.get("http://localhost:5000/api/admin/totalAdvisors", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (advisorResponse.data.success) {
+            setTotalAdvisors(advisorResponse.data.rows);
+          }
+          close_Modal();
+        } else {
+          setFormError(response.data.message);
+        }
+      } else {
+        // Adding a new advisor (include password)
+        const response = await axios.post(
+          `http://localhost:5000/api/admin/addAdvisor`,
+          advisorForm,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        if (response.data.success) {
+          // Refresh advisor data
+          const advisorResponse = await axios.get("http://localhost:5000/api/admin/totalAdvisors", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (advisorResponse.data.success) {
+            setTotalAdvisors(advisorResponse.data.rows);
+          }
+          close_Modal();
+        } else {
+          setFormError(response.data.message);
+        }
+      }
+    } catch (error) {
+      console.error(error);
+      setFormError("Server error. Please try again.");
+    }
+  };
+
+  const handleAdvisorDelete = async (advisor_id) => {
+    if (window.confirm("Are you sure you want to delete this advisor?")) {
+      try {
+        const response = await axios.delete(
+          `http://localhost:5000/api/admin/deleteAdvisor/${advisor_id}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        if (response.data.success) {
+          // Refresh advisor data
+          const advisorResponse = await axios.get("http://localhost:5000/api/admin/totalAdvisors", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (advisorResponse.data.success) {
+            setTotalAdvisors(advisorResponse.data.rows);
+          }
+        } else {
+          alert("Failed to delete advisor: " + response.data.message);
+        }
+      } catch (error) {
+        console.error("Error deleting advisor:", error);
+        alert("Error deleting advisor. Please try again.");
+      }
+    }
+  };
+
+
+
+
+
+
+
+
+
+
+
   const handleLogout = () => {
     localStorage.removeItem("currentUser");
     window.location.href = "/login";
@@ -288,6 +487,21 @@ function MainAdmin() {
   const filteredOfficials = check.filter((official) =>
     official.first_name.toLowerCase().includes(officialSearch.toLowerCase())
   );
+
+
+
+
+  // search advisors by its name
+   const checked = totalAdvisors.filter(
+    (advisor) => advisor.status === "active"
+  );
+
+  const filteredAdvisors = checked.filter((advisor) =>
+    advisor.first_name.toLowerCase().includes(advisorSearch.toLowerCase())
+  );
+
+
+
 
   // ✅ Export filtered data to CSV
   const exportFilteredToCSV = (data, filename) => {
@@ -450,6 +664,9 @@ function MainAdmin() {
         </Nav.Item>
         <Nav.Item>
           <Nav.Link eventKey="clearance">Clearance</Nav.Link>
+        </Nav.Item>
+        <Nav.Item>
+          <Nav.Link eventKey="advisors">Advisors</Nav.Link>
         </Nav.Item>
       </Nav>
 
@@ -783,6 +1000,122 @@ function MainAdmin() {
         </Card>
       )}
 
+
+
+
+
+{/*Advisors Table */}
+      {activeTab === "advisors" && (
+        <Card className="mt-3 shadow-sm">
+          <Card.Body>
+            {/* Search bar */}
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <InputGroup style={{ width: "300px" }}>
+                <InputGroup.Text>
+                  <Search />
+                </InputGroup.Text>
+                <Form.Control
+                  placeholder="Search advisors..."
+                  value={advisorSearch}
+                  onChange={(e) => setAdvisorSearch(e.target.value)}
+                />
+              </InputGroup>
+              <div>
+                <Button
+                  variant="success"
+                  className="me-2"
+                  onClick={() =>
+                    exportFilteredToCSV(
+                      filteredAdvisors,
+                      "filtered_advisors.csv"
+                    )
+                  }
+                >
+                  <Download className="me-1" /> Download CSV
+                </Button>
+                <Button
+                  variant="info"
+                  className="me-2"
+                  onClick={() =>
+                    exportFilteredToExcel(
+                      filteredAdvisors,
+                      "filtered_advisors"
+                    )
+                  }
+                >
+                  <Download className="me-1" /> Export Excel
+                </Button>
+                <Button variant="primary" onClick={open_Add_Modal}>
+                  + Add Advisors
+                </Button>
+              </div>
+            </div>
+            <Table striped bordered hover responsive>
+              <thead className="table-light">
+                <tr>
+                  <th>Advisors ID</th>
+                  <th>FirstName</th>
+                  <th>LastName</th>
+                  <th>Profession</th>
+                  <th>Education</th>
+                  <th>Department</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredAdvisors.length > 0 ? (
+                  filteredAdvisors.map((advisor, index) => (
+                    <tr key={index}>
+                      <td>{advisor.advisor_id}</td>
+                      <td>{advisor.first_name}</td>
+                      <td>{advisor.last_name}</td>
+                      <td>{advisor.profession}</td>
+                      <td>{advisor.education}</td>
+                      <td>{advisor.assigned_department}</td>
+                      <td> {advisor.email}</td>
+                      <td>{advisor.phone}</td>
+
+                      <td>
+                        <Button
+                          size="sm"
+                          variant="outline-primary"
+                          className="me-2"
+                          onClick={() => {
+                            console.log("edit clicked:", advisor.advisor_id);
+                            open_Edit_Modal(advisor.advisor_id);}}
+                        >
+                          <PencilSquare />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline-danger"
+                          onClick={() => handleAdvisorDelete(advisor.advisor_id)}
+                        >
+                          <Trash />
+                        </Button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="9" className="text-center">
+                      No matching advisors found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </Table>
+          </Card.Body>
+        </Card>
+      )}
+
+
+
+
+
       {/* Add/Edit Official Modal */}
       <OfficialForm
         show={showModal}
@@ -793,6 +1126,24 @@ function MainAdmin() {
         onChange={handleFormChange}
         onSubmit={handleFormSubmit}
       />
+
+
+
+{/* Add/Edit advisors Modal */}
+      <AdvisorForm
+  show={showAdvisorModal}
+  onHide={close_Modal}
+  mode={formMode}
+  values={advisorForm}
+  error={formError}
+  onChange={handleAdvisorFormChange}
+  onSubmit={handleAdvisorFormSubmit}
+/>
+
+
+
+
+
     </Container>
   );
 }
