@@ -1,14 +1,8 @@
 import { useState, useEffect, useContext } from "react";
-import { Modal, Button, Form, Row, Col, Alert, Spinner } from "react-bootstrap";
-import logo from "../assets/logo.png";
-import seal from "../assets/seal.png";
-import axios from "axios";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
-
-// import mockStudentData from "../data/mockStudentData.json"; // adjust path
-// import mockRiskData from "../data/mockRiskData.json"; // adjust path
+import { Modal, Button, Form, Row, Col, Alert, Spinner, Card, Container } from "react-bootstrap";
 import { AppContext } from "../context/Context";
+import axios from "axios";
+import "./ClearanceForm.css"; // We'll create this CSS file for custom styles
 
 function ClearanceForm({ show, handleClose }) {
   const { currentUser, token, pdfUrl, setPdfUrl } = useContext(AppContext);
@@ -16,7 +10,7 @@ function ClearanceForm({ show, handleClose }) {
   const [formData, setFormData] = useState({
     first_name: "",
     father_name: "",
-    Gfather_name: "", // Added Grandfather name
+    Gfather_name: "",
     sex: "",
     student_id: "",
     department: "",
@@ -25,7 +19,7 @@ function ClearanceForm({ show, handleClose }) {
     year_of_study: "",
     cause: "",
     otherReason: "",
-    faculty: "computing",
+    faculty: "",
     date: "",
   });
 
@@ -33,8 +27,8 @@ function ClearanceForm({ show, handleClose }) {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState(null);
   const [pdfPreview, setPdfPreview] = useState(false);
+  const [currentStep, setCurrentStep] = useState(1);
 
-  // Auto-fill student data from mock data when modal opens
   useEffect(() => {
     if (show && currentUser) {
       setFormData((prev) => ({
@@ -42,22 +36,18 @@ function ClearanceForm({ show, handleClose }) {
         first_name: currentUser.first_name || "",
         student_id: currentUser.student_id || "",
         department: currentUser.department || "",
-        // Remove auto-fill for academic year, semester, and year of study - let students fill these
         academic_year: "",
-        semester: "",
+        semester:"",
         year_of_study: "",
-        // Auto-fill family information
         father_name: currentUser.father_name || "",
         Gfather_name: currentUser.Gfather_name || "",
-        // Auto-fill sex from database
         sex: currentUser.sex || " ",
-        cause: "",
-        faculty: "computing",
+        cause: currentUser.cause || "",
+        faculty:currentUser.faculty ||"",
         otherReason: "",
         date: new Date().toISOString().slice(0, 16),
       }));
     }
-    console.log(pdfUrl);
   }, [show, currentUser, pdfUrl]);
 
   const handleChange = (e) => {
@@ -69,7 +59,6 @@ function ClearanceForm({ show, handleClose }) {
   const validateForm = () => {
     const newErrors = {};
 
-    // Validate dynamic fields that user needs to fill
     if (!formData.academic_year.trim())
       newErrors.academic_year = "Academic Year is required.";
     if (!formData.semester.trim()) newErrors.semester = "Semester is required.";
@@ -100,8 +89,7 @@ function ClearanceForm({ show, handleClose }) {
       if (!validateForm()) {
         setStatus({
           type: "danger",
-          message:
-            "❌ Please correct the highlighted fields before submitting.",
+          message: "❌ Please correct the highlighted fields before submitting.",
         });
         return;
       }
@@ -110,7 +98,7 @@ function ClearanceForm({ show, handleClose }) {
 
       const response = await axios.post(
         "http://localhost:5000/api/student/fillForm",
-        formData, // request body
+        formData,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -124,8 +112,7 @@ function ClearanceForm({ show, handleClose }) {
         setPdfUrl(response.data.url);
         setStatus({
           type: "success",
-          message:
-            "🎉 You are cleared! You can preview and download your clearance certificate.",
+          message: "🎉 You are cleared! You can preview and download your clearance certificate.",
         });
         setPdfPreview(true);
       }
@@ -134,7 +121,6 @@ function ClearanceForm({ show, handleClose }) {
           type: "danger",
           message: `❌ ${response.data.message}`,
         });
-        // console.log(response.data.status.request_id);
         setPdfPreview(false);
         setLoading(false);
         return;
@@ -143,46 +129,14 @@ function ClearanceForm({ show, handleClose }) {
       console.log(error);
     }
   };
-  // setTimeout(() => {
-  //   const studentExists = mockStudentData.students.find(
-  //     (student) =>
-  //       student.studentId.trim().toLowerCase() ===
-  //       formData.studentId.trim().toLowerCase()
-  //   );
 
-  //   setLoading(false);
+  const nextStep = () => {
+    if (currentStep < 3) setCurrentStep(currentStep + 1);
+  };
 
-  //   if (!studentExists) {
-  //     setStatus({
-  //       type: "danger",
-  //       message: "❌ Student ID not found. Please check and try again.",
-  //     });
-  //     setPdfPreview(false);
-  //     return;
-  //   }
-
-  //   const riskEntry = mockRiskData.risks.find(
-  //     (entry) =>
-  //       entry.studentId.trim().toLowerCase() ===
-  //       formData.studentId.trim().toLowerCase()
-  //   );
-
-  //   if (riskEntry) {
-  //     setStatus({
-  //       type: "danger",
-  //       message: `❌ Clearance denied: ${riskEntry.case}. Please contact the registrar.`,
-  //     });
-  //     setPdfPreview(false);
-  //     return;
-  //   }
-
-  //   setStatus({
-  //     type: "success",
-  //     message:
-  //       "🎉 You are cleared! You can preview and download your clearance certificate.",
-  //   });
-  //   setPdfPreview(true);
-  // }, 2000);
+  const prevStep = () => {
+    if (currentStep > 1) setCurrentStep(currentStep - 1);
+  };
 
   return (
     <Modal
@@ -192,419 +146,464 @@ function ClearanceForm({ show, handleClose }) {
       backdrop="static"
       keyboard={false}
       centered
-      className="modern-form-modal"
+      className="modern-clearance-modal"
     >
-      <Modal.Header closeButton className="bg-primary text-white">
-        <Modal.Title className="d-flex align-items-center gap-3">
-          <img src={logo} alt="BDU Logo" width="60" />
-          <div>
-            <h4 className="mb-0 fw-bold">
-              Regular Undergraduate Student's Clearance Sheet
-            </h4>
-            <small>Bahir Dar University</small>
+      <Modal.Header closeButton className="modal-header-custom">
+        {/* <Modal.Title className="w-100 text-center">
+          <div className="d-flex align-items-center justify-content-center" style={{ display: "flex" }}>
+            <div className="logo-container me-3">
+              <div className="logo-placeholder">BDU</div>
+            </div>
+            <div>
+              <h4 className="mb-0">Bahir Dar University</h4>
+              <p className="mb-0">Clearance Application Form</p>
+            </div>
           </div>
-        </Modal.Title>
+        </Modal.Title> */}
+       
+        <div className="progress-container ">
+          <div className="progress-ba d-flex " id="progress-bar">
+            <div className={`progress-step ${currentStep >= 1 ? 'active' : ''}`}>
+              <span>1</span>
+              <p>Personal Info</p>
+            </div>
+            <div className={`progress-step ${currentStep >= 2 ? 'active' : ''}`}>
+              <span>2</span>
+              <p>Academic Info</p>
+            </div>
+            <div className={`progress-step ${currentStep >= 3 ? 'active' : ''}`}>
+              <span>3</span>
+              <p>Review</p>
+            </div>
+          </div>
+        </div>
       </Modal.Header>
 
-      <Modal.Body className="p-4 bg-light">
-        <Alert variant="info" className="mb-4 shadow rounded">
-          <strong>Important:</strong> Please complete and submit this form
-          properly.
-        </Alert>
-
-        <Form
-          onSubmit={handleSubmit}
-          className="p-4 bg-white rounded shadow-sm border"
-        >
-          <h5 className="fw-bold border-bottom pb-2 mb-3 text-primary">
-            Personal Information
-          </h5>
-
-          <Alert variant="info" className="mb-3">
-            <strong>📋 Form Information:</strong> Fields marked with{" "}
-            <span className="text-muted">(Auto-filled)</span> are pre-filled
-            from your student profile. You only need to complete the remaining
-            fields marked with <span className="text-danger">*</span>.
-          </Alert>
-
-          {/* Student Name */}
-          <Row className="mb-3">
-            <Col md={6} className="mb-3">
-              <Form.Group controlId="studentName">
-                <Form.Label className="fw-bold">
-                  Student Name{" "}
-                  <small className="text-muted">(Auto-filled)</small>
-                </Form.Label>
-                <Form.Control
-                  type="text"
-                  name="studentName"
-                  value={formData.first_name}
-                  onChange={handleChange}
-                  isInvalid={!!errors.first_name}
-                  placeholder="John Doe"
-                  required
-                  readOnly
-                  className="bg-light"
-                />
-                <Form.Control.Feedback type="invalid">
-                  {errors.first_name}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Col>
-
-            {/* Father Name */}
-            <Col md={6} className="mb-3">
-              <Form.Group controlId="fatherName">
-                <Form.Label className="fw-bold">
-                  Father's Name{" "}
-                  <small className="text-muted">(Auto-filled)</small>
-                </Form.Label>
-                <Form.Control
-                  type="text"
-                  name="father_name"
-                  value={formData.father_name}
-                  onChange={handleChange}
-                  isInvalid={!!errors.father_name}
-                  placeholder="Father Name"
-                  required
-                  readOnly
-                  className="bg-light"
-                />
-                <Form.Control.Feedback type="invalid">
-                  {errors.father_name}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Col>
-          </Row>
-
-          {/* Grandfather Name */}
-          <Row className="mb-3">
-            <Col md={6} className="mb-3">
-              <Form.Group controlId="Gfather_name">
-                <Form.Label className="fw-bold">
-                  Grandfather's Name{" "}
-                  <small className="text-muted">(Auto-filled)</small>
-                </Form.Label>
-                <Form.Control
-                  type="text"
-                  name="Gfather_name"
-                  value={formData.Gfather_name}
-                  onChange={handleChange}
-                  isInvalid={!!errors.Gfather_name}
-                  placeholder="Grandfather Name"
-                  required
-                  readOnly
-                  className="bg-light"
-                />
-                <Form.Control.Feedback type="invalid">
-                  {errors.Gfather_name}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Col>
-
-            {/* Sex */}
-            <Col md={6} className="mb-3">
-              <Form.Group controlId="sex">
-                <Form.Label className="fw-bold">
-                  Sex <small className="text-muted">(Auto-filled)</small>
-                </Form.Label>
-                <div>
-                  <Form.Check
-                    inline
-                    type="radio"
-                    name="sex"
-                    value="Male"
-                    label="Male"
-                    checked={formData.sex === "M"}
-                    onChange={handleChange}
-                    disabled
-                    className="bg-light"
-                  />
-                  <Form.Check
-                    inline
-                    type="radio"
-                    name="sex"
-                    value="Female"
-                    label="Female"
-                    checked={formData.sex === "F"}
-                    onChange={handleChange}
-                    disabled
-                    className="bg-light"
-                  />
-                </div>
-              </Form.Group>
-            </Col>
-          </Row>
-
-          {/* Student ID */}
-          <Row className="mb-3">
-            <Col md={3} className="mb-3">
-              <Form.Group controlId="studentId">
-                <Form.Label className="fw-bold">
-                  Student ID <small className="text-muted">(Auto-filled)</small>
-                </Form.Label>
-                <Form.Control
-                  type="text"
-                  name="student_id"
-                  value={formData.student_id}
-                  onChange={handleChange}
-                  isInvalid={!!errors.student_id}
-                  placeholder="STU001"
-                  required
-                  readOnly
-                  className="bg-light"
-                />
-                <Form.Control.Feedback type="invalid">
-                  {errors.student_id}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Col>
-
-            {/* Department */}
-            <Col md={3} className="mb-3">
-              <Form.Group controlId="department">
-                <Form.Label className="fw-bold">
-                  Department <small className="text-muted">(Auto-filled)</small>
-                </Form.Label>
-                <Form.Control
-                  type="text"
-                  name="department"
-                  value={formData.department}
-                  onChange={handleChange}
-                  isInvalid={!!errors.department}
-                  placeholder="Computer Science"
-                  required
-                  readOnly
-                  className="bg-light"
-                />
-                <Form.Control.Feedback type="invalid">
-                  {errors.department}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Col>
-
-            {/* Academic Year */}
-            <Col md={3} className="mb-3">
-              <Form.Group controlId="academic_year">
-                <Form.Label className="fw-bold">Academic Year *</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="academic_year"
-                  value={formData.academic_year}
-                  onChange={handleChange}
-                  isInvalid={!!errors.academic_year}
-                  placeholder="e.g., 2024"
-                  required
-                />
-                <Form.Control.Feedback type="invalid">
-                  {errors.academic_year}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Col>
-
-            {/* Semester */}
-            <Col md={3} className="mb-3">
-              <Form.Group controlId="semester">
-                <Form.Label className="fw-bold">Semester *</Form.Label>
-                <Form.Select
-                  name="semester"
-                  value={formData.semester}
-                  onChange={handleChange}
-                  isInvalid={!!errors.semester}
-                  required
-                >
-                  <option value="">Select semester</option>
-                  <option value="1st">1st</option>
-                  <option value="2nd">2nd</option>
-                  <option value="Summer">Summer</option>
-                </Form.Select>
-                <Form.Control.Feedback type="invalid">
-                  {errors.semester}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Col>
-          </Row>
-
-          {/* Year of Study */}
-          <Row className="mb-3">
-            <Col md={3} className="mb-3">
-              <Form.Group controlId="yearOfStudy">
-                <Form.Label className="fw-bold">Year of Study *</Form.Label>
-                <Form.Select
-                  name="year_of_study"
-                  value={formData.year_of_study}
-                  onChange={handleChange}
-                  isInvalid={!!errors.year_of_study}
-                  required
-                >
-                  <option value="">Select year</option>
-                  <option value="I">I</option>
-                  <option value="II">II</option>
-                  <option value="III">III</option>
-                  <option value="IV">IV</option>
-                  <option value="V">V</option>
-                </Form.Select>
-                <Form.Control.Feedback type="invalid">
-                  {errors.year_of_study}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Col>
-
-            {/* Reason for Clearance */}
-            <Col md={9} className="mb-3">
-              <Form.Label className="fw-bold">
-                Reason for Clearance *
-              </Form.Label>
-              <div>
-                {[
-                  "End of Academic Year",
-                  "Graduation",
-                  "Academic Dismissal",
-                  "Withdrawing for Health/Family Reasons",
-                  "Disciplinary Case",
-                  "Other",
-                ].map((reasonOption) => (
-                  <Form.Check
-                    inline
-                    type="radio"
-                    key={reasonOption}
-                    label={
-                      reasonOption === "Other"
-                        ? "Other (please specify)"
-                        : reasonOption
-                    }
-                    name="cause"
-                    value={reasonOption}
-                    checked={formData.cause === reasonOption}
-                    onChange={handleChange}
-                    required
-                  />
-                ))}
-              </div>
-              {errors.cause && (
-                <div className="text-danger mt-1">{errors.cause}</div>
-              )}
-
-              {/* Show input for 'Other' reason */}
-              {formData.cause === "Other" && (
-                <Form.Control
-                  type="text"
-                  name="otherReason"
-                  value={formData.otherReason}
-                  onChange={handleChange}
-                  isInvalid={!!errors.otherReason}
-                  placeholder="Please specify other reason"
-                  className="mt-2"
-                  required
-                />
-              )}
-              <Form.Control.Feedback type="invalid">
-                {errors.otherReason}
-              </Form.Control.Feedback>
-            </Col>
-          </Row>
-
-          {/* Date of Application */}
-          <Form.Group className="mb-4" controlId="date">
-            <Form.Label className="fw-bold">Date of Application *</Form.Label>
-            <Form.Control
-              type="datetime-local"
-              name="date"
-              value={formData.date}
-              onChange={handleChange}
-              isInvalid={!!errors.date}
-              required
-            />
-            <Form.Control.Feedback type="invalid">
-              {errors.date}
-            </Form.Control.Feedback>
-          </Form.Group>
-
-          <div className="d-flex justify-content-end gap-2">
-            <Button
-              variant="secondary"
-              onClick={handleClose}
-              disabled={loading}
-            >
-              Cancel
-            </Button>
-            <Button type="submit" variant="primary" disabled={loading}>
-              {loading ? (
-                <>
-                  <Spinner animation="border" size="sm" className="me-2" />
-                  Submitting...
-                </>
-              ) : (
-                "Submit Clearance Request"
-              )}
-            </Button>
+      <Modal.Body className="modal-body-custom p-0">
+        {/* Progress Bar */}
+        {/* <div className="progress-container">
+          <div className="progress-bar" id="progress-bar">
+            <div className={`progress-step ${currentStep >= 1 ? 'active' : ''}`}>
+              <span>1</span>
+              <p>Personal Info</p>
+            </div>
+            <div className={`progress-step ${currentStep >= 2 ? 'active' : ''}`}>
+              <span>2</span>
+              <p>Academic Info</p>
+            </div>
+            <div className={`progress-step ${currentStep >= 3 ? 'active' : ''}`}>
+              <span>3</span>
+              <p>Review</p>
+            </div>
           </div>
-        </Form>
+        </div> */}
 
-        {status && (
-          <Alert
-            variant={status.type === "success" ? "success" : "danger"}
-            className="mt-4 shadow rounded d-flex align-items-center gap-3 p-3"
-            style={{
-              maxWidth: "600px",
-              margin: "30px auto",
-              fontSize: "1.1rem",
-              borderLeft: `5px solid ${
-                status.type === "success" ? "#28a745" : "#dc3545"
-              }`,
-              transition: "all 0.3s ease",
-            }}
-          >
-            <div
-              style={{
-                fontSize: "2.5rem",
-                color: status.type === "success" ? "#28a745" : "#dc3545",
-                userSelect: "none",
-              }}
-            >
-              {status.type === "success" ? "✅" : "❌"}
+        <Container className="py-4">
+          {/* Step 1: Personal Information */}
+          {currentStep === 1 && (
+            <div className="form-section">
+              <h4 className="section-title">Personal Information</h4>
+              <p className="section-subtitle">Your personal details (auto-filled from your profile)</p>
+              
+              <Row className="g-3">
+                <Col md={6}>
+                  <Form.Group>
+                    <Form.Label>Full Name</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData.first_name}
+                      readOnly
+                      className="readonly-field"
+                    />
+                  </Form.Group>
+                </Col>
+                
+                <Col md={6}>
+                  <Form.Group>
+                    <Form.Label>Student ID</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData.student_id}
+                      readOnly
+                      className="readonly-field"
+                    />
+                  </Form.Group>
+                </Col>
+                
+                <Col md={6}>
+                  <Form.Group>
+                    <Form.Label>Father's Name</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData.father_name}
+                      readOnly
+                      className="readonly-field"
+                    />
+                  </Form.Group>
+                </Col>
+                
+                <Col md={6}>
+                  <Form.Group>
+                    <Form.Label>Grandfather's Name</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData.Gfather_name}
+                      readOnly
+                      className="readonly-field"
+                    />
+                  </Form.Group>
+                </Col>
+                
+                <Col md={6}>
+                  <Form.Group>
+                    <Form.Label>Gender</Form.Label>
+                    <div className="d-flex gap-4" style={{ display: "flex" }}>
+                      <Form.Check
+                        inline
+                        type="radio"
+                        name="sex"
+                        label="Male"
+                        checked={formData.sex === "M"}
+                        disabled
+                        className="disabled-radio"
+                      />
+                      <Form.Check
+                        inline
+                        type="radio"
+                        name="sex"
+                        label="Female"
+                        checked={formData.sex === "F"}
+                        disabled
+                        className="disabled-radio"
+                      />
+                    </div>
+                  </Form.Group>
+                </Col>
+                
+                <Col md={6}>
+                  <Form.Group>
+                    <Form.Label>Department</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData.department}
+                      readOnly
+                      className="readonly-field"
+                    />
+                  </Form.Group>
+                </Col>
+
+                 <Col md={6}>
+                  <Form.Group>
+                    <Form.Label>Faculty</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={formData.faculty}
+                      readOnly
+                      className="readonly-field"
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+              
+              <div className="d-flex justify-content-between mt-4" style={{ display: "flex" }}>
+                <Button variant="outline-secondary" onClick={handleClose}>
+                  Cancel
+                </Button>
+                <Button variant="primary" onClick={nextStep}>
+                  Next: Academic Information
+                </Button>
+              </div>
             </div>
+          )}
 
-            <div className="flex-grow-1">
-              <strong>
-                {status.type === "success" ? "Success!" : "Error!"}
-              </strong>
-              <p className="mb-0">{status.message}</p>
+          {/* Step 2: Academic Information */}
+          {currentStep === 2 && (
+            <div className="form-section">
+              <h4 className="section-title">Academic Information</h4>
+              <p className="section-subtitle">Please provide your current academic details</p>
+              
+              <Row className="g-3">
+                <Col md={4}>
+                  <Form.Group>
+                    <Form.Label>Academic Year *</Form.Label>
+                    <Form.Control
+                      type="text"
+                      name="academic_year"
+                      value={formData.academic_year}
+                      onChange={handleChange}
+                      isInvalid={!!errors.academic_year}
+                      placeholder="e.g., 2024"
+                      className={errors.academic_year ? "is-invalid" : ""}
+                    />
+                    <Form.Control.Feedback type="invalid">
+                      {errors.academic_year}
+                    </Form.Control.Feedback>
+                  </Form.Group>
+                </Col>
+                
+                <Col md={4}>
+                  <Form.Group>
+                    <Form.Label>Semester *</Form.Label>
+                    <Form.Select
+                      name="semester"
+                      value={formData.semester}
+                      onChange={handleChange}
+                      isInvalid={!!errors.semester}
+                      className={errors.semester ? "is-invalid" : ""}
+                    >
+                      <option value="">Select semester</option>
+                      <option value="1st">1st</option>
+                      <option value="2nd">2nd</option>
+                      <option value="Summer">Summer</option>
+                    </Form.Select>
+                    <Form.Control.Feedback type="invalid">
+                      {errors.semester}
+                    </Form.Control.Feedback>
+                  </Form.Group>
+                </Col>
+                
+                <Col md={4}>
+                  <Form.Group>
+                    <Form.Label>Year of Study *</Form.Label>
+                    <Form.Select
+                      name="year_of_study"
+                      value={formData.year_of_study}
+                      onChange={handleChange}
+                      isInvalid={!!errors.year_of_study}
+                      className={errors.year_of_study ? "is-invalid" : ""}
+                    >
+                      <option value="">Select year</option>
+                      <option value="I">I</option>
+                      <option value="II">II</option>
+                      <option value="III">III</option>
+                      <option value="IV">IV</option>
+                      <option value="V">V</option>
+                    </Form.Select>
+                    <Form.Control.Feedback type="invalid">
+                      {errors.year_of_study}
+                    </Form.Control.Feedback>
+                  </Form.Group>
+                </Col>
+                
+        <Col md={12}>
+  <Form.Group>
+    <Form.Label>Reason for Clearance *</Form.Label>
 
-              {/* PDF Buttons */}
-              {pdfPreview && status.type === "success" && (
-                <div className="mt-3 d-flex gap-2">
-                  <Button
-                    variant="info"
-                    // onClick={() => generatePDF().output("dataurlnewwindow")}
-                  >
-                    👀 Preview PDF
-                  </Button>
-                  {/* <Button
-                    variant="success"
-                    // onClick={() => {
-                    //   const pdfDoc = generatePDF();
-                    //   pdfDoc.save(
-                    //     `${formData.student_id}_ClearanceCertificate.pdf`
-                    //   );
-                    // }}
-                  >
-                    📥 Download PDF
-                  </Button> */}
+    <div
+      className="reasons-grid  p-3 rounded shadow-sm"
+      style={{ width: "50%", margin: "auto" }}
+    >
+      {[
+        "End of Academic Year",
+        "Graduation",
+        "Academic Dismissal",
+        "Withdrawing for Health/Family Reasons",
+        "Disciplinary Case",
+        "Other",
+      ].map((reasonOption) => (
+        <Form.Check
+          key={reasonOption}
+          type="radio"
+          label={reasonOption === "Other" ? "Other (please specify)" : reasonOption}
+          name="cause"
+          value={reasonOption}
+          checked={formData.cause === reasonOption}
+          onChange={handleChange}
+          className={errors.cause ? "is-invalid mb-2" : "mb-2"}
+        />
+      ))}
+    </div>
 
-                  <a
-                    href={uriLink}
-                    // download={`${formData.student_id}_ClearanceCertificate.pdf`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <Button variant="success">📥 Download PDF</Button>
-                  </a>
+    {errors.cause && (
+      <div className="text-danger mt-2">{errors.cause}</div>
+    )}
+  </Form.Group>
+</Col>
+
+{formData.cause === "Other" && (
+  <Col md={12} className="mt-3">
+    <Form.Group>
+      <Form.Label>Specify Reason *</Form.Label>
+      <Form.Control
+        type="text"
+        name="otherReason"
+        value={formData.otherReason}
+        onChange={handleChange}
+        isInvalid={!!errors.otherReason}
+        placeholder="Please specify your reason"
+      />
+      <Form.Control.Feedback type="invalid">
+        {errors.otherReason}
+      </Form.Control.Feedback>
+    </Form.Group>
+  </Col>
+)}
+
+                <Col md={6}>
+                  <Form.Group>
+                    <Form.Label>Date of Application *</Form.Label>
+                    <Form.Control
+                      type="datetime-local"
+                      name="date"
+                      value={formData.date}
+                      onChange={handleChange}
+                      isInvalid={!!errors.date}
+                      className={errors.date ? "is-invalid" : ""}
+                    />
+                    <Form.Control.Feedback type="invalid">
+                      {errors.date}
+                    </Form.Control.Feedback>
+                  </Form.Group>
+                </Col>
+              </Row>
+              
+              <div className="d-flex justify-content-between mt-4" style={{ display: "flex" }}>
+                <Button variant="outline-secondary" onClick={prevStep}>
+                  Back
+                </Button>
+                <Button variant="primary" onClick={nextStep}>
+                  Next: Review & Submit
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Step 3: Review and Submit */}
+          {currentStep === 3 && (
+            <div className="form-section">
+              <h4 className="section-title">Review Your Information</h4>
+              <p className="section-subtitle">Please review all information before submitting</p>
+              
+              <Card className="review-card">
+                <Card.Body>
+                  <Row>
+                    <Col md={6}>
+                      <h6>Personal Information</h6>
+                      <div className="review-item">
+                        <span>Full Name:</span>
+                        <strong>{formData.first_name}</strong>
+                      </div>
+                      <div className="review-item">
+                        <span>Student ID:</span>
+                        <strong>{formData.student_id}</strong>
+                      </div>
+                      <div className="review-item">
+                        <span>Father's Name:</span>
+                        <strong>{formData.father_name}</strong>
+                      </div>
+                      <div className="review-item">
+                        <span>Grandfather's Name:</span>
+                        <strong>{formData.Gfather_name}</strong>
+                      </div>
+                      <div className="review-item">
+                        <span>Gender:</span>
+                        <strong>{formData.sex === "M" ? "Male" : "Female"}</strong>
+                      </div>
+                      <div className="review-item">
+                        <span>Department:</span>
+                        <strong>{formData.department}</strong>
+                      </div>
+                    </Col>
+                    
+                    <Col md={6}>
+                      <h6>Academic Information</h6>
+                         <div className="review-item">
+                        <span>Your Faculty:</span>
+                        <strong>{formData.faculty}</strong>
+                      </div>
+                      <div className="review-item">
+                        <span>Academic Year:</span>
+                        <strong>{formData.academic_year}</strong>
+                      </div>
+                      <div className="review-item">
+                        <span>Semester:</span>
+                        <strong>{formData.semester}</strong>
+                      </div>
+                      <div className="review-item">
+                        <span>Year of Study:</span>
+                        <strong>{formData.year_of_study}</strong>
+                      </div>
+                      <div className="review-item">
+                        <span>Reason for Clearance:</span>
+                        <strong>{formData.cause}</strong>
+                      </div>
+                      {formData.cause === "Other" && (
+                        <div className="review-item">
+                          <span>Specified Reason:</span>
+                          <strong>{formData.otherReason}</strong>
+                        </div>
+                      )}
+                      <div className="review-item">
+                        <span>Date of Application:</span>
+                        <strong>{new Date(formData.date).toLocaleString()}</strong>
+                      </div>
+                    </Col>
+                  </Row>
+                </Card.Body>
+              </Card>
+              
+              <div className="d-flex justify-content-between mt-4" style={{ display: "flex" }}>
+                <Button variant="outline-secondary" onClick={prevStep}>
+                  Back
+                </Button>
+                <Button 
+                  variant="primary" 
+                  onClick={handleSubmit}
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <>
+                      <Spinner animation="border" size="sm" className="me-2" />
+                      Submitting...
+                    </>
+                  ) : (
+                    "Submit Clearance Request"
+                  )}
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {status && (
+            <Alert variant={status.type} className="mb-4 status-alert alertstatuspdf">
+              <div className="d-flex align-items-center">
+                <div className="alert-icon">
+                  {status.type === "success" ? "✅" : status.type === "danger" ? "❌" : "ℹ️"}
                 </div>
-              )}
-            </div>
-          </Alert>
-        )}
+                <div className="flex-grow-1">
+                  <h6>{status.type === "success" ? "Success" : status.type === "danger" ? "Error" : "Notice"}</h6>
+                  <p className="mb-0">{status.message}</p>
+                  
+                  {pdfPreview && status.type === "success" && (
+                    <div className="mt-3 d-flex gap-2">
+                      <Button
+                        variant="outline-primary"
+                        // onClick={() => generatePDF().output("dataurlnewwindow")}
+                      >
+                        Preview PDF
+                      </Button>
+                      <a
+                        href={uriLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <Button variant="outline-success">
+                          Download PDF
+                        </Button>
+                      </a>
+                    </div>
+                  )}
+                </div>
+                <button 
+                  type="button" 
+                  className="btn-close" 
+                  onClick={() => setStatus(null)}
+                  aria-label="Close"
+                ></button>
+              </div>
+            </Alert>
+          )}
+        </Container>
       </Modal.Body>
     </Modal>
   );

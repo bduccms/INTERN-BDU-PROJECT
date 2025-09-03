@@ -1,0 +1,250 @@
+/* ClearanceForm.css */
+.modern-clearance-modal .modal-content {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.modal-header-custom {
+
+  color: #2D9DD5;
+  padding: 1.5rem 2rem;
+  border-bottom: none;
+}
+
+.modal-header-custom .btn-close {
+  filter: invert(1);
+}
+
+.logo-container {
+  width: 60px;
+  height: 60px;
+  background: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.logo-placeholder {
+  font-weight: bold;
+  color: #1a6fc4;
+  font-size: 1.2rem;
+}
+
+.modal-body-custom {
+ background: linear-gradient(135deg, #f5f8ff 0%, #e6f0ff 100%);
+}
+
+/* Progress Bar */
+.progress-container {
+  background: white;
+  padding: 1.5rem 2rem;
+  border: 1px solid #ece8e8;
+  width: 100%;
+
+}
+
+.progress-ba {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  
+}
+
+
+
+.progress-bar::before {
+  content: '';
+  position: absolute;
+  top: 20px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #2D9DD5;
+  z-index: 1;
+}
+
+.progress-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+}
+
+.progress-step span {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #e9ecef;
+  color: #6c757d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.progress-step p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.progress-step.active span {
+  background: #1a6fc4;
+  color: white;
+  box-shadow: 0 4px 10px rgba(26, 111, 196, 0.3);
+}
+
+.progress-step.active p {
+  color: #1a6fc4;
+  font-weight: 600;
+}
+
+/* Form Sections */
+.form-section {
+  background: white;
+  border: 1px solid #2D9DD5;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 25px 45px rgba(0, 0, 0, 0.05);
+  margin-bottom: 1.5rem;
+}
+
+.section-title {
+  color: #1a6fc4;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.section-subtitle {
+  color: #6c757d;
+  margin-bottom: 1.5rem;
+}
+
+/* Form Elements */
+.readonly-field {
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  cursor: not-allowed;
+}
+
+.disabled-radio .form-check-input:disabled {
+  background-color: #f8f9fa;
+}
+
+.reasons-grid {
+  display: grid;
+  background-color: aquamarine;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 0.75rem;
+
+  margin-top: 0.5rem;
+}
+
+.reasons-grid .form-check {
+  padding: 0.75rem;
+  background: #2D9DD5;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.reasons-grid .form-check:hover {
+  background: #e9ecef;
+}
+
+/* Review Card */
+.review-card {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+.review-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #f1f3f4;
+}
+
+.review-item:last-child {
+  border-bottom: none;
+}
+
+.review-item span {
+  color: #6c757d;
+}
+
+/* Buttons */
+.btn {
+  border-radius: 8px;
+  padding: 0.5rem 1.5rem;
+  font-weight: 600;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #1a6fc4 0%, #0d4d8a 100%);
+  border: none;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #0d4d8a 0%, #0a3a6b 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(26, 111, 196, 0.3);
+}
+
+.btn-outline-secondary {
+  border: 2px solid #6c757d;
+  color: #6c757d;
+}
+
+.btn-outline-secondary:hover {
+  background: #6c757d;
+  border-color: #6c757d;
+}
+
+/* Status Alert */
+.status-alert {
+  
+  border: none;
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+}
+
+.status-alert .alert-icon {
+  font-size: 2rem;
+  margin-right: 1rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .progress-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .progress-bar::before {
+    display: none;
+  }
+  
+  .progress-step {
+    flex-direction: row;
+    gap: 1rem;
+  }
+  
+  .reasons-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .review-item {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+}
