@@ -2,14 +2,15 @@ import db from "../config/mysql.js";
 import PDFDocument from "pdfkit";
 import fs from "fs";
 import path from "path";
-
+import bcrypt from "bcrypt";
 const saltRounds = 10;
 
 const changePassword = async (req, res) => {
   const { oldPassword, newPassword } = req.body;
   try {
     const [rows] = await db.query(
-      `SELECT password from student WHERE student_id=?`[req.user.student_id]
+      `SELECT password from student WHERE student_id=?`,
+      [req.user.student_id]
     );
     if (rows.length === 0) {
       return res
@@ -33,7 +34,7 @@ const changePassword = async (req, res) => {
       .status(200)
       .json({ success: true, message: "Password updated successfully" });
   } catch (error) {
-    console.error(err);
+    console.error(error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
@@ -79,7 +80,7 @@ const sendFormData = async (req, res) => {
           semester,
           year_of_study,
           cause,
-          "computing",
+          rows[0].faculty,
           "pending",
         ]
       );

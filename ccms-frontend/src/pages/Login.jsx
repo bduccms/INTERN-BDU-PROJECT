@@ -56,6 +56,8 @@ function Login({ setIsAuthenticated }) {
           navigate("/department-admin");
         } else if (response.data.role === "admin") {
           navigate("/main-admin");
+        } else if (response.data.role === "advisor") {
+          navigate("/advisor");
         }
       } else {
         setError(response.data.message || "Invalid credentials");

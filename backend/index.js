@@ -7,9 +7,10 @@ import studentRoutes from "./route/studentRoutes.js";
 import officialRoutes from "./route/officialRoutes.js";
 import adminRoutes from "./route/adminRoutes.js";
 import loginUser from "./middleware/login.js";
-import addStudent from "./middleware/addStudent.js";
+
 import createAdmin from "./middleware/createAdmin.js";
 import path from "path";
+import advisorRoutes from "./route/advisorRoutes.js";
 
 const app = express();
 
@@ -22,9 +23,9 @@ app.use(express.json());
 app.use("/api/student", studentRoutes);
 app.use("/api/staff_official", officialRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/advisor", advisorRoutes);
 
 app.use("/api/login", loginUser);
-app.use("/api/addStudent", addStudent);
 app.use("/api/createAdmin", createAdmin);
 
 const PORT = process.env.PORT || 5000;

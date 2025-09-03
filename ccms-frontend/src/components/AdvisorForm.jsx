@@ -26,17 +26,16 @@ function AdvisorForm({
         {error && <Alert variant="danger">{error}</Alert>}
         <Form onSubmit={onSubmit}>
           <Form.Group className="mb-3" controlId="advisorIdInput">
-  <Form.Label>Advisor ID</Form.Label>
-  <Form.Control
-    type="text"
-    name="advisor_id"
-    value={values.advisor_id}   
-    onChange={onChange}
-    placeholder="e.g., ADV001"
-    required
-  />
-</Form.Group>
-
+            <Form.Label>Advisor ID</Form.Label>
+            <Form.Control
+              type="text"
+              name="advisor_id"
+              value={values.advisor_id}
+              onChange={onChange}
+              placeholder="e.g., ADV001"
+              required
+            />
+          </Form.Group>
 
           <Form.Group className="mb-3" controlId="firstNameInput">
             <Form.Label>First Name</Form.Label>
@@ -90,8 +89,8 @@ function AdvisorForm({
             <Form.Label>Department</Form.Label>
             <Form.Control
               type="text"
-              name="assigned_department"
-              value={values.assigned_department}
+              name="department"
+              value={values.department}
               onChange={onChange}
               placeholder="Enter department"
               required
@@ -110,7 +109,7 @@ function AdvisorForm({
             />
           </Form.Group>
 
-          {mode === "add" && (
+          {/* {mode === "add" && (
             <Form.Group className="mb-3" controlId="passwordInput">
               <Form.Label>Password</Form.Label>
               <Form.Control
@@ -122,19 +121,18 @@ function AdvisorForm({
                 required
               />
             </Form.Group>
-          )}
+          )} */}
 
           <Form.Group className="mb-3" controlId="phoneInput">
             <Form.Label>Phone</Form.Label>
-           <Form.Control
-  type="text"   // ✅ better than number
-  name="phone"
-  value={values.phone}
-  onChange={onChange}
-  placeholder="Enter phone number"
-  required
-/>
-
+            <Form.Control
+              type="text" // ✅ better than number
+              name="phone"
+              value={values.phone}
+              onChange={onChange}
+              placeholder="Enter phone number"
+              required
+            />
           </Form.Group>
 
           <Button type="submit" variant="primary" className="w-100">

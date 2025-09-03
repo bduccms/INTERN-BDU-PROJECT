@@ -1,4 +1,40 @@
 import db from "../config/mysql.js";
+import bcrypt from "bcrypt";
+const saltRounds = 10;
+
+const changePassword = async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  try {
+    const [rows] = await db.query(
+      `SELECT password from staff_official WHERE official_id=?`,
+      [req.user.official_id]
+    );
+    if (rows.length === 0) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+    const isMatch = await bcrypt.compare(currentPassword, rows[0].password);
+    if (!isMatch) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Old password is incorrect" });
+    }
+
+    const hashedNewPassword = await bcrypt.hash(newPassword, saltRounds);
+    await db.query(
+      "UPDATE staff_official SET password = ? WHERE official_id = ?",
+      [hashedNewPassword, req.user.official_id]
+    );
+
+    res
+      .status(200)
+      .json({ success: true, message: "Password updated successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
 
 const addWarning = async (req, res) => {
   try {
@@ -31,8 +67,7 @@ const addWarning = async (req, res) => {
     ];
 
     await db.query(insertQuery, values);
-
-    res
+    return res
       .status(201)
       .json({ success: true, message: "Risk submitted successfully." });
   } catch (error) {
@@ -62,19 +97,6 @@ const deleteWarning = async (req, res) => {
   }
 };
 
-// const seeWarnings = async (req, res) => {
-//   try {
-//     const [rows] = await db.query(
-//       `select * from department_risk where  added_by=? AND deleted=false`,
-//       [req.user.official_id]
-//     );
-//     res.status(201).json({ success: true, rows });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ success: false, message: "Internal server error." });
-//   }
-// };
-
 const seeWarnings = async (req, res) => {
   try {
     const [rows] = await db.query(
@@ -97,6 +119,7 @@ const seeWarnings = async (req, res) => {
     res.status(500).json({ success: false, message: "Internal server error." });
   }
 };
+
 const seeAllStudents = async (red, res) => {
   try {
     const [rows] = await db.query(
@@ -139,4 +162,11 @@ const editWarning = async (req, res) => {
   }
 };
 
-export { addWarning, seeAllStudents, seeWarnings, deleteWarning, editWarning };
+export {
+  changePassword,
+  addWarning,
+  seeAllStudents,
+  seeWarnings,
+  deleteWarning,
+  editWarning,
+};

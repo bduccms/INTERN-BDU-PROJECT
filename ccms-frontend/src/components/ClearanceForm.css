@@ -4,10 +4,12 @@
   overflow: hidden;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
 }
-
+.dark-blue-bg {
+  background-color: #2d9dd5;
+  color: white;
+}
 .modal-header-custom {
-
-  color: #2D9DD5;
+  color: #2d9dd5;
   padding: 1.5rem 2rem;
   border-bottom: none;
 }
@@ -34,7 +36,7 @@
 }
 
 .modal-body-custom {
- background: linear-gradient(135deg, #f5f8ff 0%, #e6f0ff 100%);
+  background: linear-gradient(135deg, #f5f8ff 0%, #e6f0ff 100%);
 }
 
 /* Progress Bar */
@@ -43,26 +45,22 @@
   padding: 1.5rem 2rem;
   border: 1px solid #ece8e8;
   width: 100%;
-
 }
 
 .progress-ba {
   display: flex;
   justify-content: space-between;
   width: 100%;
-  
 }
 
-
-
 .progress-bar::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 20px;
   left: 0;
   right: 0;
   height: 2px;
-  background: #2D9DD5;
+  background: #2d9dd5;
   z-index: 1;
 }
 
@@ -109,7 +107,7 @@
 /* Form Sections */
 .form-section {
   background: white;
-  border: 1px solid #2D9DD5;
+  border: 1px solid #2d9dd5;
   border-radius: 12px;
   padding: 2rem;
   box-shadow: 0 25px 45px rgba(0, 0, 0, 0.05);
@@ -149,7 +147,7 @@
 
 .reasons-grid .form-check {
   padding: 0.75rem;
-  background: #2D9DD5;
+  background: #2d9dd5;
   border-radius: 8px;
   transition: all 0.2s ease;
 }
@@ -210,7 +208,6 @@
 
 /* Status Alert */
 .status-alert {
-  
   border: none;
   border-radius: 12px;
   padding: 1.25rem;
@@ -229,20 +226,20 @@
     align-items: flex-start;
     gap: 1rem;
   }
-  
+
   .progress-bar::before {
     display: none;
   }
-  
+
   .progress-step {
     flex-direction: row;
     gap: 1rem;
   }
-  
+
   .reasons-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .review-item {
     flex-direction: column;
     gap: 0.25rem;

@@ -32,7 +32,7 @@ import axios from "axios";
 function MainAdmin() {
   const [activeTab, setActiveTab] = useState("officials"); // "officials" | "risks"
   const [officials, setOfficials] = useState([]);
-  const [advisors, setAdvisors] = useState([]);// State for advisors
+  const [advisors, setAdvisors] = useState([]); // State for advisors
   const [risks, setRisks] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [showAdvisorModal, setShowAdvisorModal] = useState(false);
@@ -54,22 +54,16 @@ function MainAdmin() {
     password: "",
   });
 
-
-const [advisorForm, setAdvisorForm] = useState({
-  advisor_id: "",
-  first_name: "",
-  last_name: "",
-  profession: "",
-  education: "",
-  assigned_department: "",
-  email: "",
-  phone: "",
-  password: "",
-});
-
-
-
-
+  const [advisorForm, setAdvisorForm] = useState({
+    advisor_id: "",
+    first_name: "",
+    last_name: "",
+    profession: "",
+    education: "",
+    department: "",
+    email: "",
+    phone: "",
+  });
 
   const [formError, setFormError] = useState(null);
 
@@ -84,7 +78,7 @@ const [advisorForm, setAdvisorForm] = useState({
   const [riskSearch, setRiskSearch] = useState(""); // 🔥 Search input for risks
   const [riskStatusFilter, setRiskStatusFilter] = useState("all"); // 🔥 Status filter for risks
   const [totalOfficials, setTotalOfficial] = useState([]);
-  const [totalAdvisors, setTotalAdvisors] = useState([]);  // total advisors for advisors tab
+  const [totalAdvisors, setTotalAdvisors] = useState([]); // total advisors for advisors tab
   const [totalRisk, setTotalRisk] = useState([]);
   const [totalClearanceRequest, setTotalClearanceRequest] = useState([]);
   const [filteredRisks, setFilteredRisks] = useState([]);
@@ -98,14 +92,14 @@ const [advisorForm, setAdvisorForm] = useState({
     []
   );
 
-
-
-useEffect(() => {
   const fetchAdvisors = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/admin/totalAdvisors", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await axios.get(
+        "http://localhost:5000/api/admin/totalAdvisor",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       if (response.data.success) {
         setTotalAdvisors(response.data.rows); // this will populate filteredAdvisors too
       }
@@ -114,11 +108,9 @@ useEffect(() => {
     }
   };
 
-  if (token) fetchAdvisors();
-}, [token]);
-
-
-
+  useEffect(() => {
+    if (token) fetchAdvisors();
+  }, [token]);
 
   const fetchData = async () => {
     try {
@@ -318,13 +310,7 @@ useEffect(() => {
     // setTotalOfficial(updatedList);
   };
 
-
-
-
-
-
-
-const open_Add_Modal = () => {
+  const open_Add_Modal = () => {
     setFormMode("add");
     setAdvisorForm({
       advisor_id: "",
@@ -332,25 +318,20 @@ const open_Add_Modal = () => {
       last_name: "",
       profession: "",
       education: "",
-      assigned_department: "",
-
+      department: "",
       email: "",
       phone: "",
-
-      password: "",
     });
     setShowAdvisorModal(true);
   };
 
   const open_Edit_Modal = (id) => {
-  setFormMode("edit");
-  const advisor = totalAdvisors.find((a) => a.advisor_id === id);
-  if (!advisor) return;
-  setAdvisorForm(advisor);
-  setShowAdvisorModal(true);
-};
-
-
+    setFormMode("edit");
+    const advisor = totalAdvisors.find((a) => a.advisor_id === id);
+    if (!advisor) return;
+    setAdvisorForm(advisor);
+    setShowAdvisorModal(true);
+  };
 
   const close_Modal = () => {
     setShowAdvisorModal(false);
@@ -371,10 +352,10 @@ const open_Add_Modal = () => {
       !advisorForm.last_name ||
       !advisorForm.profession ||
       !advisorForm.education ||
-      !advisorForm.assigned_department ||
       !advisorForm.email ||
-      !advisorForm.phone ||
-      (formMode === "add" && !advisorForm.password) // password required only when adding
+      !advisorForm.department ||
+      !advisorForm.phone // ||
+      // (formMode === "add" && !advisorForm.password) // password required only when adding
     ) {
       setFormError("Please fill in all required fields.");
       return;
@@ -383,7 +364,7 @@ const open_Add_Modal = () => {
     try {
       if (formMode === "edit") {
         // Exclude password when editing
-        const { advisor_id, password, ...editData } = advisorForm;
+        const { advisor_id, ...editData } = advisorForm;
 
         const response = await axios.put(
           `http://localhost:5000/api/admin/editAdvisor/${advisorForm.advisor_id}`,
@@ -395,9 +376,12 @@ const open_Add_Modal = () => {
 
         if (response.data.success) {
           // Refresh advisor data
-          const advisorResponse = await axios.get("http://localhost:5000/api/admin/totalAdvisors", {
-            headers: { Authorization: `Bearer ${token}` },
-          });
+          const advisorResponse = await axios.get(
+            "http://localhost:5000/api/admin/totalAdvisor",
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
           if (advisorResponse.data.success) {
             setTotalAdvisors(advisorResponse.data.rows);
           }
@@ -417,9 +401,12 @@ const open_Add_Modal = () => {
 
         if (response.data.success) {
           // Refresh advisor data
-          const advisorResponse = await axios.get("http://localhost:5000/api/admin/totalAdvisors", {
-            headers: { Authorization: `Bearer ${token}` },
-          });
+          const advisorResponse = await axios.get(
+            "http://localhost:5000/api/admin/totalAdvisor",
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
           if (advisorResponse.data.success) {
             setTotalAdvisors(advisorResponse.data.rows);
           }
@@ -445,9 +432,12 @@ const open_Add_Modal = () => {
         );
         if (response.data.success) {
           // Refresh advisor data
-          const advisorResponse = await axios.get("http://localhost:5000/api/admin/totalAdvisors", {
-            headers: { Authorization: `Bearer ${token}` },
-          });
+          const advisorResponse = await axios.get(
+            "http://localhost:5000/api/admin/totalAdvisor",
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
           if (advisorResponse.data.success) {
             setTotalAdvisors(advisorResponse.data.rows);
           }
@@ -460,16 +450,6 @@ const open_Add_Modal = () => {
       }
     }
   };
-
-
-
-
-
-
-
-
-
-
 
   const handleLogout = () => {
     localStorage.removeItem("currentUser");
@@ -488,20 +468,14 @@ const open_Add_Modal = () => {
     official.first_name.toLowerCase().includes(officialSearch.toLowerCase())
   );
 
-
-
-
   // search advisors by its name
-   const checked = totalAdvisors.filter(
+  const checked = totalAdvisors.filter(
     (advisor) => advisor.status === "active"
   );
 
   const filteredAdvisors = checked.filter((advisor) =>
     advisor.first_name.toLowerCase().includes(advisorSearch.toLowerCase())
   );
-
-
-
 
   // ✅ Export filtered data to CSV
   const exportFilteredToCSV = (data, filename) => {
@@ -1000,11 +974,7 @@ const open_Add_Modal = () => {
         </Card>
       )}
 
-
-
-
-
-{/*Advisors Table */}
+      {/*Advisors Table */}
       {activeTab === "advisors" && (
         <Card className="mt-3 shadow-sm">
           <Card.Body>
@@ -1037,10 +1007,7 @@ const open_Add_Modal = () => {
                   variant="info"
                   className="me-2"
                   onClick={() =>
-                    exportFilteredToExcel(
-                      filteredAdvisors,
-                      "filtered_advisors"
-                    )
+                    exportFilteredToExcel(filteredAdvisors, "filtered_advisors")
                   }
                 >
                   <Download className="me-1" /> Export Excel
@@ -1074,7 +1041,7 @@ const open_Add_Modal = () => {
                       <td>{advisor.last_name}</td>
                       <td>{advisor.profession}</td>
                       <td>{advisor.education}</td>
-                      <td>{advisor.assigned_department}</td>
+                      <td>{advisor.department}</td>
                       <td> {advisor.email}</td>
                       <td>{advisor.phone}</td>
 
@@ -1085,14 +1052,17 @@ const open_Add_Modal = () => {
                           className="me-2"
                           onClick={() => {
                             console.log("edit clicked:", advisor.advisor_id);
-                            open_Edit_Modal(advisor.advisor_id);}}
+                            open_Edit_Modal(advisor.advisor_id);
+                          }}
                         >
                           <PencilSquare />
                         </Button>
                         <Button
                           size="sm"
                           variant="outline-danger"
-                          onClick={() => handleAdvisorDelete(advisor.advisor_id)}
+                          onClick={() =>
+                            handleAdvisorDelete(advisor.advisor_id)
+                          }
                         >
                           <Trash />
                         </Button>
@@ -1112,10 +1082,6 @@ const open_Add_Modal = () => {
         </Card>
       )}
 
-
-
-
-
       {/* Add/Edit Official Modal */}
       <OfficialForm
         show={showModal}
@@ -1127,23 +1093,16 @@ const open_Add_Modal = () => {
         onSubmit={handleFormSubmit}
       />
 
-
-
-{/* Add/Edit advisors Modal */}
+      {/* Add/Edit advisors Modal */}
       <AdvisorForm
-  show={showAdvisorModal}
-  onHide={close_Modal}
-  mode={formMode}
-  values={advisorForm}
-  error={formError}
-  onChange={handleAdvisorFormChange}
-  onSubmit={handleAdvisorFormSubmit}
-/>
-
-
-
-
-
+        show={showAdvisorModal}
+        onHide={close_Modal}
+        mode={formMode}
+        values={advisorForm}
+        error={formError}
+        onChange={handleAdvisorFormChange}
+        onSubmit={handleAdvisorFormSubmit}
+      />
     </Container>
   );
 }

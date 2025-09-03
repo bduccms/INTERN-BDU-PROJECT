@@ -15,7 +15,7 @@ import MainAdmin from "./pages/MainAdmin";
 import ClearanceDashboard from "./pages/ClearanceDashboard"; // ✅ Added
 import logo from "./assets/logo.png";
 import { AppContext } from "./context/Context";
-
+import StudentRegistration from "./pages/AdvisorsDshboard";
 // function App() {
 //   const [isAuthenticated, setIsAuthenticated] = useState(false);
 //   const [currentUser, setCurrentUser] = useState(null);
@@ -169,6 +169,10 @@ function App() {
               <Route
                 path="/main-admin"
                 element={<MainAdmin currentUser={currentUser} />}
+              />
+              <Route
+                path="/advisor"
+                element={<StudentRegistration currentUser={currentUser} />}
               />
               <Route path="/" element={<Navigate to="/login" replace />} />
             </Routes>

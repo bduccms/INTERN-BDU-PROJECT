@@ -42,6 +42,7 @@ router.post("/", async (req, res) => {
     if (!result) result = await tryLogin("admin", "admin_id", "admin");
     if (!result)
       result = await tryLogin("staff_official", "official_id", "staff");
+    if (!result) result = await tryLogin("advisor", "advisor_id", "advisor");
 
     if (!result) {
       return res

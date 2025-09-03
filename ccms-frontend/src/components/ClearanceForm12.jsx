@@ -1,6 +1,17 @@
 import React, { useState, useEffect, useContext } from "react";
-import { Modal, Button, Form, Row, Col, Alert, Spinner, Card, Container, ListGroup } from "react-bootstrap";
-import { CheckCircle, Clock } from 'react-bootstrap-icons';
+import {
+  Modal,
+  Button,
+  Form,
+  Row,
+  Col,
+  Alert,
+  Spinner,
+  Card,
+  Container,
+  ListGroup,
+} from "react-bootstrap";
+import { CheckCircle, Clock } from "react-bootstrap-icons";
 import { AppContext } from "../context/Context";
 import axios from "axios";
 import logo from "../assets/logo.png";
@@ -32,12 +43,12 @@ function ClearanceForm({ show, handleClose }) {
   const [currentStep, setCurrentStep] = useState(1);
   const [showApprovalModal, setShowApprovalModal] = useState(false);
   const [approvalStatus, setApprovalStatus] = useState({
-    dormitory: { status: 'pending', name: 'Dormitory' },
-    library: { status: 'pending', name: 'Library' },
-    cafeteria: { status: 'pending', name: 'Cafeteria' },
-    sportMaster: { status: 'pending', name: 'Sport Master' },
-    facultyStore: { status: 'pending', name: 'Faculty Store' },
-    registrar: { status: 'pending', name: 'Registrar' }
+    dormitory: { status: "pending", name: "Dormitory" },
+    library: { status: "pending", name: "Library" },
+    cafeteria: { status: "pending", name: "Cafeteria" },
+    sportMaster: { status: "pending", name: "Sport Master" },
+    facultyStore: { status: "pending", name: "Faculty Store" },
+    registrar: { status: "pending", name: "Registrar" },
   });
 
   useEffect(() => {
@@ -85,24 +96,15 @@ function ClearanceForm({ show, handleClose }) {
     return Object.keys(newErrors).length === 0;
   };
 
-  const processApproval = (official) => {
+  const processApproval = async (official) => {
     return new Promise((resolve) => {
-      // Set status to processing
-      setApprovalStatus(prev => ({
-        ...prev,
-        [official]: { ...prev[official], status: 'processing' }
-      }));
-
-      // Simulate API call delay with random time between 1-2 seconds
-      const delay = 1000 + Math.random() * 1000;
-      
       setTimeout(() => {
-        setApprovalStatus(prev => ({
+        setApprovalStatus((prev) => ({
           ...prev,
-          [official]: { ...prev[official], status: 'approved' }
+          [official]: { ...prev[official], status: "approved" },
         }));
         resolve();
-      }, delay);
+      }, 1000); // 1 second delay between each approval
     });
   };
 
@@ -121,7 +123,8 @@ function ClearanceForm({ show, handleClose }) {
       if (!validateForm()) {
         setStatus({
           type: "danger",
-          message: "❌ Please correct the highlighted fields before submitting.",
+          message:
+            "❌ Please correct the highlighted fields before submitting.",
         });
         return;
       }
@@ -129,20 +132,18 @@ function ClearanceForm({ show, handleClose }) {
       setLoading(true);
       setShowApprovalModal(true);
 
-      // Reset all statuses to pending first
+      // Reset approval status
       const resetApprovalStatus = {};
-      Object.keys(approvalStatus).forEach(key => {
-        resetApprovalStatus[key] = { ...approvalStatus[key], status: 'pending' };
+      Object.keys(approvalStatus).forEach((key) => {
+        resetApprovalStatus[key] = {
+          ...approvalStatus[key],
+          status: "processing",
+        };
       });
       setApprovalStatus(resetApprovalStatus);
 
-      // Process approvals sequentially with a small delay to show the pending state
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Define the order of officials to process
-      const officials = ['library', 'dormitory', 'cafeteria', 'sportMaster', 'facultyStore', 'registrar'];
-      
-      // Process each official one by one
+      // Process approvals sequentially
+      const officials = Object.keys(approvalStatus);
       for (const official of officials) {
         await processApproval(official);
       }
@@ -162,7 +163,8 @@ function ClearanceForm({ show, handleClose }) {
         setPdfUrl(response.data.url);
         setStatus({
           type: "success",
-          message: "🎉 You are cleared! You can preview and download your clearance certificate.",
+          message:
+            "🎉 You are cleared! You can preview and download your clearance certificate.",
         });
         setPdfPreview(true);
         // Close the approval modal after a short delay
@@ -181,7 +183,7 @@ function ClearanceForm({ show, handleClose }) {
         return;
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   };
 
@@ -193,100 +195,85 @@ function ClearanceForm({ show, handleClose }) {
     if (currentStep > 1) setCurrentStep(currentStep - 1);
   };
 
-  // Approval Status Indicator Component
-  const ApprovalStatusItem = ({ status, name }) => (
-    <ListGroup.Item className="d-flex justify-content-between align-items-center">
-      <span className="me-3">{name}</span>
-      <div className="d-flex align-items-center">
-        {status === 'processing' && (
-          <div className="position-relative" style={{ width: '24px', height: '24px' }}>
-            <Spinner animation="border" size="sm" className="position-absolute" />
-          </div>
-        )}
-        {status === 'approved' && (
-          <div className="d-flex align-items-center">
-            <CheckCircle className="text-success" style={{ fontSize: '1.25rem' }} />
-          </div>
-        )}
-        {status === 'pending' && (
-          <div className="d-flex align-items-center" style={{ width: '24px', height: '24px' }}>
-            <Clock className="text-muted" style={{ fontSize: '1rem' }} />
-          </div>
-        )}
-      </div>
-    </ListGroup.Item>
-  );
-
   // Step Indicator Component
   const StepIndicator = ({ currentStep }) => {
     const steps = [
-      { number: 1, name: 'Personal Information' },
-      { number: 2, name: 'Academic Information' },
-      { number: 3, name: 'Review & Submit' }
+      { number: 1, name: "Personal Information" },
+      { number: 2, name: "Academic Information" },
+      { number: 3, name: "Review & Submit" },
     ];
-    
+
     return (
       <div className="d-flex flex-column align-items-center mb-4">
-        <div className="d-flex align-items-center justify-content-center mb-2" style={{ width: '100%' }}>
+        <div
+          className="d-flex align-items-center justify-content-center mb-2"
+          style={{ width: "100%" }}
+        >
           {steps.map((step, index) => (
             <React.Fragment key={step.number}>
               <div className="d-flex flex-column align-items-center position-relative">
                 <div
                   className={`d-flex align-items-center justify-content-center rounded-circle ${
-                    currentStep >= step.number ? 'bg-primary text-white' : 'bg-light'
+                    currentStep >= step.number
+                      ? "bg-primary text-white"
+                      : "bg-light"
                   }`}
                   style={{
-                    width: '70px',
-                    height: '70px',
-                    boxShadow: '0 2px 5px rgba(0, 0, 0, 0.6)',
-                    position: 'relative',
+                    width: "70px",
+                    height: "70px",
+                    boxShadow: "0 2px 5px rgba(0, 0, 0, 0.6)",
+                    position: "relative",
                     zIndex: 2,
-                    border: '3px solid #fff',
-                    marginBottom: '8px',
-                    fontSize: '1.5rem',
-                    fontWeight: 'bold'
+                    border: "3px solid #fff",
+                    marginBottom: "8px",
+                    fontSize: "1.5rem",
+                    fontWeight: "bold",
                   }}
                 >
                   {step.number}
                 </div>
-                <div 
-                  className={`text-center ${currentStep >= step.number ? 'fw-bold text-primary' : 'text-muted'}`}
+                <div
+                  className={`text-center ${
+                    currentStep >= step.number
+                      ? "fw-bold text-primary"
+                      : "text-muted"
+                  }`}
                   style={{
-                    fontSize: '1rem',
-                    maxWidth: '500px',
-                    lineHeight: '1.9',
-                    marginBottom: '4px'
+                    fontSize: "1rem",
+                    maxWidth: "500px",
+                    lineHeight: "1.9",
+                    marginBottom: "4px",
                   }}
                 >
                   {step.name}
                 </div>
               </div>
-              
+
               {/* Connecting line */}
               {index < steps.length - 1 && (
-                <div 
+                <div
                   className="position-relative"
                   style={{
-                    width: '150px',
-                    height: '6px',
-                    margin: '0 -25px',
-                    top: '-15px',
-                    zIndex: 1
+                    width: "150px",
+                    height: "6px",
+                    margin: "0 -25px",
+                    top: "-15px",
+                    zIndex: 1,
                   }}
                 >
-                  <div 
+                  <div
                     className="position-absolute h-100 bg-light"
                     style={{
-                      width: '100%',
-                      borderRadius: '3px',
+                      width: "100%",
+                      borderRadius: "3px",
                     }}
                   />
-                  <div 
+                  <div
                     className="position-absolute h-100 bg-primary"
                     style={{
-                      width: currentStep > step.number ? '100%' : '0%',
-                      borderRadius: '3px',
-                      transition: 'width 0.5s ease-in-out',
+                      width: currentStep > step.number ? "100%" : "0%",
+                      borderRadius: "3px",
+                      transition: "width 0.5s ease-in-out",
                     }}
                   />
                 </div>
@@ -298,38 +285,47 @@ function ClearanceForm({ show, handleClose }) {
     );
   };
 
+  // Approval Status Indicator Component
+  const ApprovalStatusItem = ({ status, name }) => (
+    <ListGroup.Item className="d-flex justify-content-between align-items-center">
+      <span>{name}</span>
+      {status === "processing" && <Spinner animation="border" size="sm" />}
+      {status === "approved" && <CheckCircle className="text-success" />}
+      {status === "pending" && <Clock className="text-muted" />}
+    </ListGroup.Item>
+  );
 
   return (
-    <>
-      <Modal
-        show={show}
-        onHide={handleClose}
-        size="lg"
-        fullscreen={true}
-        dialogClassName="modal-fullscreen-lg-down"
-      >
+    <Modal
+      show={show}
+      onHide={handleClose}
+      size="lg"
+      fullscreen={true}
+      dialogClassName="modal-fullscreen-lg-down"
+    >
       <Modal.Header closeButton className="dark-blue-bg">
-        <div className="d-flex align-items-center" >
+        <div className="d-flex align-items-center">
           <div className="me-3">
-            <img src={logo} alt="Logo" style={{ width: '50px' }} />
+            <img src={logo} alt="Logo" style={{ width: "50px" }} />
           </div>
           <div>
             <h4 className="mb-0">Bahir Dar University</h4>
             <p className="mb-0">Clearance Application Form</p>
           </div>
         </div>
-
       </Modal.Header>
-      <Modal.Body className="p-0 d-flex flex-column" style={{ width: '100%' }}>
-        <Container className="py-4 flex-grow-1" style={{ width: '100%' }}>
+      <Modal.Body className="p-0 d-flex flex-column" style={{ width: "100%" }}>
+        <Container className="py-4 flex-grow-1" style={{ width: "100%" }}>
           {/* Step Indicator */}
           <StepIndicator currentStep={currentStep} />
 
           {/* Step 1: Personal Information */}
           {currentStep === 1 && (
-            <div className="form-section" style={{ width: '100%' }}>
+            <div className="form-section" style={{ width: "100%" }}>
               <h4 className="section-title">Personal Information</h4>
-              <p className="section-subtitle">Your personal details (auto-filled from your profile)</p>
+              <p className="section-subtitle">
+                Your personal details (auto-filled from your profile)
+              </p>
 
               <Row className="g-3">
                 <Col md={6}>
@@ -431,7 +427,10 @@ function ClearanceForm({ show, handleClose }) {
                 </Col>
               </Row>
 
-              <div className="d-flex justify-content-between mt-4" style={{ display: "flex" }}>
+              <div
+                className="d-flex justify-content-between mt-4"
+                style={{ display: "flex" }}
+              >
                 <Button variant="outline-secondary" onClick={handleClose}>
                   Cancel
                 </Button>
@@ -444,9 +443,11 @@ function ClearanceForm({ show, handleClose }) {
 
           {/* Step 2: Academic Information */}
           {currentStep === 2 && (
-            <div className="form-section" style={{ width: '100%' }}>
+            <div className="form-section" style={{ width: "100%" }}>
               <h4 className="section-title">Academic Information</h4>
-              <p className="section-subtitle">Please provide your current academic details</p>
+              <p className="section-subtitle">
+                Please provide your current academic details
+              </p>
 
               <Row className="g-3">
                 <Col md={4}>
@@ -530,7 +531,11 @@ function ClearanceForm({ show, handleClose }) {
                         <Form.Check
                           key={reasonOption}
                           type="radio"
-                          label={reasonOption === "Other" ? "Other (please specify)" : reasonOption}
+                          label={
+                            reasonOption === "Other"
+                              ? "Other (please specify)"
+                              : reasonOption
+                          }
                           name="cause"
                           value={reasonOption}
                           checked={formData.cause === reasonOption}
@@ -583,7 +588,10 @@ function ClearanceForm({ show, handleClose }) {
                 </Col>
               </Row>
 
-              <div className="d-flex justify-content-between mt-4" style={{ display: "flex" }}>
+              <div
+                className="d-flex justify-content-between mt-4"
+                style={{ display: "flex" }}
+              >
                 <Button variant="outline-secondary" onClick={prevStep}>
                   Back
                 </Button>
@@ -595,9 +603,11 @@ function ClearanceForm({ show, handleClose }) {
           )}
           {/* Step 3: Review and Submit */}
           {currentStep === 3 && (
-            <div className="form-section" style={{ width: '100%' }}>
+            <div className="form-section" style={{ width: "100%" }}>
               <h4 className="section-title">Review Your Information</h4>
-              <p className="section-subtitle">Please review all information before submitting</p>
+              <p className="section-subtitle">
+                Please review all information before submitting
+              </p>
 
               <Card className="review-card">
                 <Card.Body>
@@ -622,7 +632,9 @@ function ClearanceForm({ show, handleClose }) {
                       </div>
                       <div className="review-item">
                         <span>Gender:</span>
-                        <strong>{formData.sex === "M" ? "Male" : "Female"}</strong>
+                        <strong>
+                          {formData.sex === "M" ? "Male" : "Female"}
+                        </strong>
                       </div>
                       <div className="review-item">
                         <span>Department:</span>
@@ -660,14 +672,19 @@ function ClearanceForm({ show, handleClose }) {
                       )}
                       <div className="review-item">
                         <span>Date of Application:</span>
-                        <strong>{new Date(formData.date).toLocaleString()}</strong>
+                        <strong>
+                          {new Date(formData.date).toLocaleString()}
+                        </strong>
                       </div>
                     </Col>
                   </Row>
                 </Card.Body>
               </Card>
 
-              <div className="d-flex justify-content-between mt-4" style={{ display: "flex" }}>
+              <div
+                className="d-flex justify-content-between mt-4"
+                style={{ display: "flex" }}
+              >
                 <Button variant="outline-secondary" onClick={prevStep}>
                   Back
                 </Button>
@@ -690,20 +707,33 @@ function ClearanceForm({ show, handleClose }) {
           )}
 
           {status && (
-            <Alert variant={status.type} className="mb-4 status-alert alertstatuspdf">
+            <Alert
+              variant={status.type}
+              className="mb-4 status-alert alertstatuspdf"
+            >
               <div className="d-flex align-items-center">
                 <div className="alert-icon">
-                  {status.type === "success" ? "✅" : status.type === "danger" ? "❌" : "ℹ️"}
+                  {status.type === "success"
+                    ? "✅"
+                    : status.type === "danger"
+                    ? "❌"
+                    : "ℹ️"}
                 </div>
                 <div className="flex-grow-1">
-                  <h6>{status.type === "success" ? "Success" : status.type === "danger" ? "Error" : "Notice"}</h6>
+                  <h6>
+                    {status.type === "success"
+                      ? "Success"
+                      : status.type === "danger"
+                      ? "Error"
+                      : "Notice"}
+                  </h6>
                   <p className="mb-0">{status.message}</p>
 
                   {pdfPreview && status.type === "success" && (
                     <div className="mt-3 d-flex gap-2">
                       <Button
                         variant="outline-primary"
-                      // onClick={() => generatePDF().output("dataurlnewwindow")}
+                        // onClick={() => generatePDF().output("dataurlnewwindow")}
                       >
                         Preview PDF
                       </Button>
@@ -712,9 +742,7 @@ function ClearanceForm({ show, handleClose }) {
                         target="_blank"
                         rel="noopener noreferrer"
                       >
-                        <Button variant="outline-success">
-                          Download PDF
-                        </Button>
+                        <Button variant="outline-success">Download PDF</Button>
                       </a>
                     </div>
                   )}
@@ -731,46 +759,7 @@ function ClearanceForm({ show, handleClose }) {
         </Container>
       </Modal.Body>
     </Modal>
-
-    {/* Approval Status Modal */}
-    <Modal 
-      show={showApprovalModal} 
-      onHide={() => setShowApprovalModal(false)}
-      centered
-      backdrop="static"
-    >
-      <Modal.Header closeButton>
-        <Modal.Title>Processing Clearance Request</Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        <ListGroup variant="flush">
-          {Object.entries(approvalStatus).map(([key, { status, name }]) => (
-            <ApprovalStatusItem key={key} status={status} name={name} />
-          ))}
-        </ListGroup>
-      </Modal.Body>
-      </Modal>
-
-      {/* Approval Status Modal */}
-      <Modal 
-        show={showApprovalModal} 
-        onHide={() => setShowApprovalModal(false)}
-        centered
-        backdrop="static"
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>Processing Clearance Request</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <ListGroup variant="flush">
-            {Object.entries(approvalStatus).map(([key, { status, name }]) => (
-              <ApprovalStatusItem key={key} status={status} name={name} />
-            ))}
-          </ListGroup>
-        </Modal.Body>
-      </Modal>
-    </>
   );
-};
+}
 
 export default ClearanceForm;

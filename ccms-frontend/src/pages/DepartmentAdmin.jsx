@@ -35,7 +35,7 @@ function DepartmentAdmin() {
   const { token, setToken, currentUser } = useContext(AppContext);
   const [allStudents, setAllStudents] = useState([]);
   const [studentSearch, setStudentSearch] = useState("");
-  
+
   // Change password states
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
@@ -279,8 +279,8 @@ function DepartmentAdmin() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-    setToken(null);
-    navigate("/");
+    setToken("");
+    window.location.href = "/login";
   };
 
   const handleChangePassword = async (e) => {
@@ -299,31 +299,35 @@ function DepartmentAdmin() {
     }
 
     try {
-      const url = 'http://localhost:5000/api/staff_official/changePassword';
+      const url = "http://localhost:5000/api/staff_official/changePassword";
       const payload = {
         currentPassword,
         newPassword,
       };
-      
-      console.log('Sending password change request to:', url);
-      console.log('Request payload:', { ...payload, currentPassword: '***', newPassword: '***' });
-      console.log('Auth token:', token ? 'Present' : 'Missing');
-      
+
+      console.log("Sending password change request to:", url);
+      console.log("Request payload:", {
+        ...payload,
+        currentPassword: "***",
+        newPassword: "***",
+      });
+      console.log("Auth token:", token ? "Present" : "Missing");
+
       const response = await axios({
-        method: 'post',
+        method: "post",
         url: url,
         data: payload,
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        validateStatus: (status) => status < 500 // Don't throw for 4xx errors
+        validateStatus: (status) => status < 500, // Don't throw for 4xx errors
       });
 
-      console.log('Password change response:', {
+      console.log("Password change response:", {
         status: response.status,
         statusText: response.statusText,
-        data: response.data
+        data: response.data,
       });
 
       if (response.data && response.data.success) {
@@ -338,16 +342,17 @@ function DepartmentAdmin() {
         }, 2000);
       }
     } catch (error) {
-      console.error('Password change error:', error);
-      console.error('Error response:', error.response?.data);
-      
-      let errorMessage = 'Failed to change password. ';
-      
+      console.error("Password change error:", error);
+      console.error("Error response:", error.response?.data);
+
+      let errorMessage = "Failed to change password. ";
+
       if (error.response) {
         // The request was made and the server responded with a status code
         // that falls out of the range of 2xx
         if (error.response.status === 404) {
-          errorMessage += 'The password change endpoint was not found (404). Please check the API URL.';
+          errorMessage +=
+            "The password change endpoint was not found (404). Please check the API URL.";
         } else if (error.response.data && error.response.data.message) {
           errorMessage += error.response.data.message;
         } else {
@@ -355,18 +360,23 @@ function DepartmentAdmin() {
         }
       } else if (error.request) {
         // The request was made but no response was received
-        errorMessage += 'No response from server. Please check your connection.';
+        errorMessage +=
+          "No response from server. Please check your connection.";
       } else {
         // Something happened in setting up the request
-        errorMessage += error.message || 'Unknown error occurred.';
+        errorMessage += error.message || "Unknown error occurred.";
       }
-      
+
       setPasswordError(errorMessage);
     }
   };
 
   return (
-    <Container fluid className="p-4" style={{ backgroundColor: "#f8f9fc", minHeight: "100vh" }}>
+    <Container
+      fluid
+      className="p-4"
+      style={{ backgroundColor: "#f8f9fc", minHeight: "100vh" }}
+    >
       {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div className="d-flex align-items-center">
@@ -389,7 +399,12 @@ function DepartmentAdmin() {
             >
               <Key className="me-1" /> Change Password
             </Button>
-            <Button variant="outline-danger" size="sm" className="mt-1" onClick={handleLogout}>
+            <Button
+              variant="outline-danger"
+              size="sm"
+              className="mt-1"
+              onClick={handleLogout}
+            >
               <FiLogOut style={{ marginRight: "5px" }} /> Logout
             </Button>
           </div>
@@ -554,13 +569,15 @@ function DepartmentAdmin() {
                     {filteredStudents.map((student) => (
                       <Col md={6} key={student.student_id} className="mb-2">
                         <Card
-                          className={`cursor-pointer ${selectedStudent?.student_id === student.student_id
+                          className={`cursor-pointer ${
+                            selectedStudent?.student_id === student.student_id
                               ? "border-primary bg-light"
                               : ""
-                            } ${isStudentInRisk(student.student_id)
+                          } ${
+                            isStudentInRisk(student.student_id)
                               ? "border-warning"
                               : ""
-                            }`}
+                          }`}
                           onClick={() =>
                             !isStudentInRisk(student.student_id) &&
                             handleStudentSelect(student)
@@ -590,8 +607,8 @@ function DepartmentAdmin() {
                               )}
                               {selectedStudent?.student_id ===
                                 student.student_id && (
-                                  <Badge bg="primary">Selected</Badge>
-                                )}
+                                <Badge bg="primary">Selected</Badge>
+                              )}
                             </div>
                           </Card.Body>
                         </Card>
@@ -644,15 +661,20 @@ function DepartmentAdmin() {
       </Modal>
 
       {/* Change Password Modal */}
-      <Modal show={showChangePassword} onHide={() => setShowChangePassword(false)}>
+      <Modal
+        show={showChangePassword}
+        onHide={() => setShowChangePassword(false)}
+      >
         <Modal.Header closeButton>
           <Modal.Title>Change Password</Modal.Title>
         </Modal.Header>
         <Form onSubmit={handleChangePassword}>
           <Modal.Body>
             {passwordError && <Alert variant="danger">{passwordError}</Alert>}
-            {passwordSuccess && <Alert variant="success">{passwordSuccess}</Alert>}
-            
+            {passwordSuccess && (
+              <Alert variant="success">{passwordSuccess}</Alert>
+            )}
+
             <Form.Group className="mb-3">
               <Form.Label>Current Password</Form.Label>
               <Form.Control
@@ -662,7 +684,7 @@ function DepartmentAdmin() {
                 required
               />
             </Form.Group>
-            
+
             <Form.Group className="mb-3">
               <Form.Label>New Password</Form.Label>
               <Form.Control
@@ -672,7 +694,7 @@ function DepartmentAdmin() {
                 required
               />
             </Form.Group>
-            
+
             <Form.Group className="mb-3">
               <Form.Label>Confirm New Password</Form.Label>
               <Form.Control
@@ -684,7 +706,10 @@ function DepartmentAdmin() {
             </Form.Group>
           </Modal.Body>
           <Modal.Footer>
-            <Button variant="secondary" onClick={() => setShowChangePassword(false)}>
+            <Button
+              variant="secondary"
+              onClick={() => setShowChangePassword(false)}
+            >
               Cancel
             </Button>
             <Button variant="primary" type="submit">
