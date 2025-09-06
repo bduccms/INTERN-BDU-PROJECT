@@ -2,9 +2,12 @@ import React, { useState, useContext } from "react";
 import "./StudentRegistration.css";
 import axios from "axios";
 import { AppContext } from "../context/Context";
+import { Button, Modal, Form, Alert } from "react-bootstrap";
+import { FaSignOutAlt, FaKey } from "react-icons/fa"; // 🔹 Icons for logout & password
+
 
 const StudentRegistration = () => {
-  const { token, setToken, currentUser } = useContext(AppContext);
+  const { token } = useContext(AppContext);
   const [student, setStudent] = useState({
     student_id: "",
     first_name: "",
@@ -18,6 +21,24 @@ const StudentRegistration = () => {
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("");
 
+  // 🔹 Change Password state
+  const [showModal, setShowModal] = useState(false);
+  const [passwordData, setPasswordData] = useState({
+    oldPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [passwordMessage, setPasswordMessage] = useState("");
+  const [passwordMessageType, setPasswordMessageType] = useState("");
+
+  // 🔹 Logout
+  const handleLogout = () => {
+    localStorage.removeItem("currentUser");
+    localStorage.removeItem("token");
+    window.location.href = "/login";
+  };
+
+  // 🔹 Student form
   const handleChange = (e) => {
     const { name, value } = e.target;
     setStudent({
@@ -30,38 +51,7 @@ const StudentRegistration = () => {
     e.preventDefault();
     setMessage("");
 
-    // Validation
-    // if (student.password !== student.confirmPassword) {
-    //   setMessage("Passwords do not match");
-    //   setMessageType("error");
-    //   return;
-    // }
-
-    // if (student.password.length < 6) {
-    //   setMessage("Password must be at least 6 characters");
-    //   setMessageType("error");
-    //   return;
-    // }
-
     try {
-      // Replace with your actual API endpoint
-      //   const response = await fetch("/api/students", {
-      //     method: "POST",
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //     },
-      //     body: JSON.stringify({
-      //       student_id: student.student_id,
-      //       first_name: student.first_name,
-      //       father_name: student.father_name,
-      //       department: student.department,
-      //       faculty: student.faculty,
-      //       sex: student.sex,
-      //       Gfather_name: student.Gfather_name,
-      //       password: student.password,
-      //     }),
-      //   });
-
       const response = await axios.post(
         `http://localhost:5000/api/advisor/addStudent`,
         student,
@@ -73,7 +63,6 @@ const StudentRegistration = () => {
       if (response.data.success) {
         setMessage("Student registered successfully!");
         setMessageType("success");
-        // Reset form
         setStudent({
           student_id: "",
           first_name: "",
@@ -84,8 +73,7 @@ const StudentRegistration = () => {
           sex: "",
         });
       } else {
-        const errorData = await response.json();
-        setMessage(errorData.message || "Failed to register student");
+        setMessage(response.data.message || "Failed to register student");
         setMessageType("error");
       }
     } catch (error) {
@@ -94,9 +82,75 @@ const StudentRegistration = () => {
     }
   };
 
+  // 🔹 Change Password Handlers
+  const handlePasswordChange = (e) => {
+    const { name, value } = e.target;
+    setPasswordData({ ...passwordData, [name]: value });
+  };
+
+  const handlePasswordSubmit = async (e) => {
+    e.preventDefault();
+    setPasswordMessage("");
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setPasswordMessage("New passwords do not match!");
+      setPasswordMessageType("error");
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        `http://localhost:5000/api/advisor/changePassword`,
+        {
+          oldPassword: passwordData.oldPassword,
+          newPassword: passwordData.newPassword,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (response.data.success) {
+        setPasswordMessage("Password changed successfully!");
+        setPasswordMessageType("success");
+        setPasswordData({
+          oldPassword: "",
+          newPassword: "",
+          confirmPassword: "",
+        });
+        setTimeout(() => setShowModal(false), 1500);
+      } else {
+        setPasswordMessage(response.data.message || "Failed to change password");
+        setPasswordMessageType("error");
+      }
+    } catch (error) {
+      setPasswordMessage("Network error. Please try again.");
+      setPasswordMessageType("error");
+    }
+  };
+
   return (
     <div className="registration-container">
       <div className="registration-card">
+        <div className="d-flex justify-content-end mb-3 gap-2">
+  <Button
+    variant="outline-primary"
+    onClick={() => setShowModal(true)}
+    className="d-flex align-items-center"
+  >
+    <FaKey className="me-2" /> Change Password
+  </Button>
+
+  <Button
+    variant="outline-danger"
+    onClick={handleLogout}
+    className="d-flex align-items-center"
+  >
+    <FaSignOutAlt className="me-2" /> Logout
+  </Button>
+</div>
+
+
         <div className="registration-header">
           <h2>
             <i className="fas fa-user-graduate"></i> Student Registration
@@ -106,6 +160,7 @@ const StudentRegistration = () => {
 
         <form onSubmit={handleSubmit} className="registration-form">
           <div className="form-grid">
+            {/* Student Form Fields */}
             <div className="form-group">
               <label htmlFor="student_id" className="required">
                 Student ID
@@ -230,36 +285,6 @@ const StudentRegistration = () => {
                 </div>
               </div>
             </div>
-
-            {/* <div className="form-group">
-              <label htmlFor="password" className="required">
-                Password
-              </label>
-              <input
-                type="password"
-                id="password"
-                name="password"
-                value={student.password}
-                onChange={handleChange}
-                placeholder="Create a password"
-                required
-              />
-            </div> */}
-
-            {/* <div className="form-group">
-              <label htmlFor="confirmPassword" className="required">
-                Confirm Password
-              </label>
-              <input
-                type="password"
-                id="confirmPassword"
-                name="confirmPassword"
-                value={student.confirmPassword}
-                onChange={handleChange}
-                placeholder="Confirm your password"
-                required
-              />
-            </div> */}
           </div>
 
           <button type="submit" className="submit-btn">
@@ -269,6 +294,68 @@ const StudentRegistration = () => {
           {message && <div className={`message ${messageType}`}>{message}</div>}
         </form>
       </div>
+
+      {/* 🔹 Change Password Modal */}
+      <Modal show={showModal} onHide={() => setShowModal(false)}>
+        <Modal.Header closeButton>
+  <Modal.Title>
+    <FaKey className="me-2" /> Change Password
+  </Modal.Title>
+</Modal.Header>
+
+        <Form onSubmit={handlePasswordSubmit}>
+          <Modal.Body>
+            {passwordMessage && (
+              <Alert
+                variant={passwordMessageType === "success" ? "success" : "danger"}
+              >
+                {passwordMessage}
+              </Alert>
+            )}
+
+            <Form.Group className="mb-3">
+              <Form.Label>Current Password</Form.Label>
+              <Form.Control
+                type="password"
+                name="oldPassword"
+                value={passwordData.oldPassword}
+                onChange={handlePasswordChange}
+                required
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>New Password</Form.Label>
+              <Form.Control
+                type="password"
+                name="newPassword"
+                value={passwordData.newPassword}
+                onChange={handlePasswordChange}
+                required
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Confirm New Password</Form.Label>
+              <Form.Control
+                type="password"
+                name="confirmPassword"
+                value={passwordData.confirmPassword}
+                onChange={handlePasswordChange}
+                required
+              />
+            </Form.Group>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={() => setShowModal(false)}>
+              Cancel
+            </Button>
+            <Button variant="primary" type="submit">
+              Update Password
+            </Button>
+          </Modal.Footer>
+        </Form>
+      </Modal>
     </div>
   );
 };
